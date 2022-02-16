@@ -206,4 +206,4 @@ function updateEmployeeRole() {
       });
     }
 
-module.exports = menu
+menu();
