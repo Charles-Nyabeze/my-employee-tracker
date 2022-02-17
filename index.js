@@ -61,7 +61,7 @@ function menu() {
 }
 
 function viewEmployees() {
-  var query = "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.department_name AS department, role.salary FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department on role.department_id = department.id"
+  var query = "SELECT * FROM employees"
   db.query(query, function (err, res) {
     console.table(res);
     menu();
@@ -76,8 +76,25 @@ function viewDepartments() {
   });
 }
 
+function viewEmployeesByDepartment() {
+  inquirer.prompt({
+      name: "dept",
+      type: "list",
+      message: "What department would you like to view?",
+      choices: showdepartments
+  })
+      .then(function (answer) {
+          db.query(
+              "SELECT employee.id, first_name AS FIRSTNAME, last_name AS LASTNAME, title AS POSITION, name AS DEPARTMENT, salary as SALARY FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id WHERE department.name = ? ORDER BY title", [answer.dept], function (err, res) {
+                  if (err) throw err;
+                  console.table('\nALL EMPLOYEES BY DEPARTMENT\n', res);
+                  menu();
+              });
+      });
+}
+
 function viewRoles() {
-  var query = "SELECT * FROM role"
+  var query = "SELECT * FROM roles"
   db.query(query, function (err, res) {
     console.table(res);
     menu();
@@ -109,12 +126,9 @@ function addEmployee() {
       }
     ])
     .then(function (res) {
-      const firstName = res.firstName;
-      const lastName = res.lastName;
-      const employRoleID = res.addEmployRole;
-      const employManID = res.addEmployMan;
-      const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("${firstName}", "${lastName}", "${employRoleID}", "${employManID}")`;
-      db.query(query, function (err, res) {
+      const query = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)")`;
+      const params = [data.first_name, data.last_name, data.role_id, data.manager_id];
+      db.query(query, params, function (err, res) {
         if (err) {
           throw err;
         }
