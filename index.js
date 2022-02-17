@@ -12,13 +12,11 @@ function menu() {
           message: "What would you like to do?",
           choices: [
               "View All Employees",
-              "View All Employees by Department",
               "View All Departments",
               "View All Roles",
               "Add Employee",
               "Add Department",
               "Add Role",
-              "Remove Employee",
               "Update Employee Role",
               "Exit Application"
           ]
@@ -28,9 +26,6 @@ function menu() {
           switch (answer.selection) {
               case "View All Employees":
                   viewEmployees();
-                  break;
-              case "View All Employees by Department":
-                  viewEmployeesByDepartment();
                   break;
               case "View All Departments":
                   viewDepartments();
@@ -47,9 +42,6 @@ function menu() {
               case "Add Role":
                   addRole();
                   break;
-              case "Remove Employee":
-                  removeEmployee();
-                  break;
               case "Update Employee Role":
                   updateEmployeeRole();
                   break;
@@ -60,14 +52,15 @@ function menu() {
       });
 }
 
+// WHEN I choose to view all employees
 function viewEmployees() {
-  var query = "SELECT * FROM employees"
+  var query = "SELECT * FROM employee"
   db.query(query, function (err, res) {
     console.table(res);
     menu();
   });
 }
-
+// WHEN I choose to view all departments
 function viewDepartments() {
   var query = "SELECT * FROM department"
   db.query(query, function (err, res) {
@@ -75,24 +68,7 @@ function viewDepartments() {
     menu();
   });
 }
-
-function viewEmployeesByDepartment() {
-  inquirer.prompt({
-      name: "dept",
-      type: "list",
-      message: "What department would you like to view?",
-      choices: showdepartments
-  })
-      .then(function (answer) {
-          db.query(
-              "SELECT employee.id, first_name AS FIRSTNAME, last_name AS LASTNAME, title AS POSITION, name AS DEPARTMENT, salary as SALARY FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id WHERE department.name = ? ORDER BY title", [answer.dept], function (err, res) {
-                  if (err) throw err;
-                  console.table('\nALL EMPLOYEES BY DEPARTMENT\n', res);
-                  menu();
-              });
-      });
-}
-
+// WHEN I choose to view all roles
 function viewRoles() {
   var query = "SELECT * FROM roles"
   db.query(query, function (err, res) {
@@ -101,6 +77,7 @@ function viewRoles() {
   });
 }
 
+//WHEN I choose to add an employee
 function addEmployee() {
   inquirer
     .prompt([
@@ -125,19 +102,20 @@ function addEmployee() {
         name: "addEmployMan"
       }
     ])
-    .then(function (res) {
-      const query = `INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)")`;
+    .then(function (data) {
+      const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
       const params = [data.first_name, data.last_name, data.role_id, data.manager_id];
-      db.query(query, params, function (err, res) {
+      db.query(query, params, function (err, rows) {
         if (err) {
           throw err;
         }
-        console.table(res);
+        console.table(rows);
         menu();
       });
     });
 }
 
+// WHEN I choose to add a department
 function addDepartment() {
   inquirer
     .prompt({
@@ -147,7 +125,7 @@ function addDepartment() {
     })
     .then(function (res) {
       const newDepartment = res.newDept;
-      const query = `INSERT INTO department (department_name) VALUES ("${newDepartment}")`;
+      const query = `INSERT INTO department (name) VALUES ("${newDepartment}")`;
       db.query(query, function (err, res) {
         if (err) {
           throw err;
@@ -158,6 +136,7 @@ function addDepartment() {
     });
 }
 
+//WHEN I choose to add a role
 function addRole() {
   inquirer
     .prompt([
@@ -192,6 +171,7 @@ function addRole() {
     });
 }
 
+//WHEN I choose to update an employee role
 function updateEmployeeRole() {
     inquirer
     .prompt([
